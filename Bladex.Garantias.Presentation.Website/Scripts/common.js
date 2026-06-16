@@ -90,6 +90,8 @@ $(document).ready(function () {
 
     // Deshabilitar campos
     DisableFields(true);
+
+    ApplyGarantiaReadOnlyModeWhenNeeded();
 });
 
 $(document).keydown(function (e) {
@@ -114,12 +116,73 @@ function DisableFields(disable) {
     }
 }
 
+function IsGarantiaReadOnlyMode() {
+    var readOnly = $("#IsReadOnly").val();
+    return readOnly == "True" || readOnly == "true";
+}
+
+function ApplyGarantiaReadOnlyModeWhenNeeded() {
+    if (!IsGarantiaReadOnlyMode()) {
+        return;
+    }
+
+    ApplyGarantiaReadOnlyMode();
+    window.setTimeout(ApplyGarantiaReadOnlyMode, 0);
+    window.setTimeout(ApplyGarantiaReadOnlyMode, 250);
+}
+
+function ApplyGarantiaReadOnlyMode() {
+    var widgetNames = [
+        "tComboBox",
+        "tDropDownList",
+        "tDatePicker",
+        "tDateTimePicker",
+        "tTimePicker",
+        "tTextBox",
+        "tNumericTextBox"
+    ];
+
+    $("input, select, textarea, .t-widget, .t-combobox, .t-dropdownlist, .t-datepicker, .t-numerictextbox").each(function () {
+        var control = $(this);
+
+        $.each(widgetNames, function (index, widgetName) {
+            var widget = control.data(widgetName);
+            if (widget && widget.disable) {
+                widget.disable();
+            }
+        });
+    });
+
+    $("input[type='text'], input[type='password'], input:not([type]), textarea")
+        .not("#logged-user")
+        .prop("readOnly", true)
+        .attr("readonly", "readonly")
+        .addClass("readonly");
+
+    $("#Garantia_IdentificacionFideicomiso")
+        .prop("readOnly", true)
+        .attr("readonly", "readonly")
+        .addClass("readonly")
+        .unbind(".garantiaReadOnly")
+        .bind("keydown.garantiaReadOnly paste.garantiaReadOnly drop.garantiaReadOnly", function (e) {
+            e.preventDefault();
+            return false;
+        });
+
+    $("select, input[type='checkbox'], input[type='radio'], input[type='file']")
+        .attr("disabled", "disabled");
+
+    $("#btnSaveGarantia, input[type='submit']")
+        .attr("disabled", "disabled")
+        .hide();
+}
+
 function onAutocompleteChange(e) {
     var htmlControlId = e.currentTarget.name;
     var value = e.value;
     if (value && htmlControlId) {
         if (value.length > _AUTO_COMPLETE_LENGHT) {
-            alert("Ingreso inválido. No puede exceder " + _AUTO_COMPLETE_LENGHT + ' caracteres');erw
+            alert("Ingreso inválido. No puede exceder " + _AUTO_COMPLETE_LENGHT + ' caracteres');
             return;
         }
         //convert value to UpperCase
@@ -366,7 +429,8 @@ function goBack() {
 function makeNiceTable(tableId) {
 
     var newTable = $("#" + tableId).dataTable({
-        "bJQueryUI": true,
+        "bJQueryUI": false,
+        "sDom": 'lfrt<"dt-footer clearfix"ip>',
         "oLanguage": {
             "sLengthMenu": "Display _MENU_ records per page",
             "sZeroRecords": "No records found",
@@ -377,15 +441,11 @@ function makeNiceTable(tableId) {
         "aLengthMenu": [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
         "aoColumnDefs": [
             { "bSearchable": false, "bSortable": false, "aTargets": ["action"] }
-
         ],
         "iDisplayLength": 10,
         "aaSorting": [[1, "desc"]],
         "bAutoWidth": true,
         "bProcessing": true
-        //"bStateSave": true,
-        //"iCookieDuration": 300
-        //"sPaginationType": "full_numbers"
     });
     return newTable;
 

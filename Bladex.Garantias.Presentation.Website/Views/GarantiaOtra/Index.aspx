@@ -4,8 +4,6 @@
 	Listado de Otras Garantías x
 </asp:Content>
 <asp:Content ID="ContentHeader" ContentPlaceHolderID="HeaderContent" runat="server">
-    <script src="<%= Url.Content("~/Scripts/jquery.dataTables.min.js") %>" type="text/javascript"></script>
-    <script src="<%= Url.Content("~/Scripts/common.js") %>" type="text/javascript"></script>
 	<script src="<%= Url.Content("~/Scripts/index.js") %>" type="text/javascript"></script>
 </asp:Content>
 
@@ -33,7 +31,7 @@
         </tbody>
     </table>
     <div>
-        <%if (!ViewBag.CategoriaSuper.IsReadOnly){%>
+        <%if (ViewBag.CategoriaSuper != null && !ViewBag.CategoriaSuper.IsReadOnly){%>
         <%if (User.Identity.IsAuthenticated && User.IsInRole("Power User") && !User.IsInRole("Checker")) {%>
             <%:Html.ActionLink(string.Format("Crear {0}", ViewData["CategoriaSuperTitle"].ToString()), "Create", new {CategoriaSuperId = ViewData["CategoriaSuperId"].ToString()})%> | 
         <%}%>
